@@ -1,0 +1,4 @@
+/* Einstiegspunkt Styles. Reihenfolge: Tailwind -> Tokens -> Basis. */
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./base.css";
