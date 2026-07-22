@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  ::selection {
+    background-color: #FEF3C7;
+    color: #1A1714;
+  }
+
+  .maplibregl-ctrl-attrib { @apply !text-[10px] !bg-white/70; }
+  .maplibregl-ctrl-logo { display: none !important; }
+}
+
+@layer components {
+  .container-prose { @apply max-w-5xl mx-auto px-5 md:px-8; }
+  .h-display { @apply font-display tracking-tight; }
+
+  .place-row { @apply transition-all; }
+  .place-row.dragging { @apply shadow-card opacity-50 scale-[1.01]; }
+
+  /* ── Gedruckte Reise-Präsentation ── */
+  @media print {
+    .no-print       { display: none !important; }
+    body            { background: white; margin: 0; }
+    .print-full     { width: 100vw; margin-left: calc(-50vw + 50%); }
+    .print-break    { break-before: page; }
+    .print-avoid    { break-inside: avoid; }
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
+
+/* ── Animationen ── */
+@keyframes loading {
+  0%   { width: 10%; margin-left: 0; }
+  50%  { width: 60%; margin-left: 30%; }
+  100% { width: 10%; margin-left: 90%; }
+}
+
+@keyframes fade-in   { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slide-up  { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.animate-in        { animation: fade-in 0.15s ease, slide-up 0.2s ease; }
+.animate-fade-in   { animation: fade-in 0.3s ease; }

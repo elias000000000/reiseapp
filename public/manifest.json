@@ -1,0 +1,17 @@
+{
+  "name": "Reiseapp",
+  "short_name": "Reiseapp",
+  "description": "Persönliche Reiseplanung",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBFAF7",
+  "theme_color": "#FBFAF7",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
