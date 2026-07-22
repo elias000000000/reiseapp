@@ -30,15 +30,6 @@ export function PlanTripDialog({ destination, onClose }: Props) {
 
   const INTERESTS = ACTIVITIES_BY_TYPE[destination.type] ?? DEFAULT_ACTIVITIES;
 
-  // Escape schließt Dialog
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !loading) onClose();
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [onClose, loading]);
-
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [interests, setInterests] = useState<string[]>(() => {
@@ -48,6 +39,15 @@ export function PlanTripDialog({ destination, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
   const [error, setError] = useState("");
+
+  // Escape schließt Dialog
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !loading) onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose, loading]);
 
   const n = daysBetween(start, end);
   const toggle = (i: string) =>

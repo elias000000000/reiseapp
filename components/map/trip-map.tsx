@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef } from "react";
-import Map, { Marker, NavigationControl, type MapRef } from "react-map-gl/maplibre";
+import Map, { Marker, NavigationControl, AttributionControl, type MapRef } from "react-map-gl/maplibre";
 import type { Place, PlaceKind } from "@/lib/types";
 import { placeImageUrl } from "@/lib/images";
 import { mapsDirectionsUrl } from "@/lib/deep-links";
@@ -96,9 +96,10 @@ export function TripMap({ places, selectedId, onSelect }: Props) {
         mapStyle={OSM_STYLE as never}
         initialViewState={initialView}
         style={{ width: "100%", height: "100%" }}
-        attributionControl={{ compact: true }}
+        attributionControl={false}
         onClick={() => onSelect?.(null)}
       >
+        <AttributionControl compact position="bottom-right" />
         <NavigationControl position="top-right" showCompass={false} />
 
         {located.map((p) => {
