@@ -1,5 +1,22 @@
 {
+  "name": "reiseapp",
+  "private": true,
+  "description": "Root-Orchestrierung fuer das Vercel-Deployment: baut das Backend (Serverless Function unter /api) und das Frontend (Vite-SPA).",
+  "scripts": {
+    "vercel-build": "tsc -p backend/tsconfig.json && npm --prefix frontend install && npm --prefix frontend run build"
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.110.8"
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@supabase/supabase-js": "^2.110.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.10",
+    "typescript": "^5.5.4"
   }
 }

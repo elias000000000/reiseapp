@@ -99,11 +99,18 @@ export async function filterDestinations(answers: Phase1Answers): Promise<Destin
 
   const rows = (data ?? []).map((row) => DestinationRowSchema.parse(row));
 
-  // Distanz-/Machbarkeits-Filter: nur anwendbar, wenn der Ort Koordinaten hat
-  // (Migration 005, per fetch_coordinates.js befuellt). Ohne Koordinaten kein
-  // Ausschluss - graceful degradation wie bei fehlenden Bildern.
+  // Distanz-/Machbarkeits-Filter.
+  const maxBandDays = DISTANCE_BANDS[DISTANCE_BANDS.length - 1].minDays;
   return rows.filter((d) => {
-    if (d.latitude === null || d.longitude === null) return true;
+    // Ohne Koordinaten laesst sich die Distanz nicht pruefen. Fail-closed:
+    // nur zulassen, wenn die Reise ohnehin lang genug ist, dass selbst ein
+    // Langstreckenziel machbar waere. Sonst koennte ein Fernziel OHNE
+    // Koordinaten bei kurzer Reise durchrutschen (harte Regel: "2 Tage ->
+    // niemals Indien"). Aktuell haben alle 300 Orte Koordinaten; dies ist ein
+    // Sicherheitsnetz fuer kuenftig ergaenzte Orte ohne Geodaten.
+    if (d.latitude === null || d.longitude === null) {
+      return answers.duration_days >= Math.max(d.minimum_days, maxBandDays);
+    }
     const km = haversineKm(answers.origin_lat, answers.origin_lng, d.latitude, d.longitude);
     return answers.duration_days >= Math.max(d.minimum_days, distanceRequiredDays(km));
   });

@@ -12,11 +12,15 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
+import { supabase, supabaseConfigError } from "../lib/supabase";
 
 interface AuthContextValue {
   userId: string | null;
   loading: boolean;
+  // Release-Haertung: harter Init-/Konfigfehler (fehlende Env-Vars oder
+  // Auth-Server nicht erreichbar). App zeigt daraufhin eine Fehlerseite statt
+  // ewig im Ladezustand (weisser Bildschirm) haengenzubleiben.
+  error: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -25,24 +29,41 @@ const Ctx = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(supabaseConfigError);
 
   useEffect(() => {
+    // Fehlt die Konfiguration, gar nicht erst versuchen zu netzwerken -
+    // direkt in den Fehlerzustand (App zeigt Konfig-Fehlerseite).
+    if (supabaseConfigError) {
+      setLoading(false);
+      return;
+    }
+
     async function init() {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setSession(data.session);
-      } else {
-        const { data: anon, error } = await supabase.auth.signInAnonymously();
-        if (error) {
-          // Sehr seltener Fall (z. B. anonyme Anmeldung im Dashboard nicht
-          // aktiviert, oder Netzwerkfehler) - kein Login-Screen als Fallback
-          // vorhanden, daher nur loggen. Die App bleibt ohne Session haengen;
-          // /health-artige Diagnose erfolgt ueber die Server-Logs.
-          console.error("Anonyme Anmeldung fehlgeschlagen:", error.message);
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+          return;
+        }
+        const { data: anon, error: signInError } = await supabase.auth.signInAnonymously();
+        if (signInError) {
+          // z. B. anonyme Anmeldung im Supabase-Dashboard nicht aktiviert.
+          console.error("Anonyme Anmeldung fehlgeschlagen:", signInError.message);
+          setError(
+            "Anmeldung nicht moeglich. Bitte pruefe die Supabase-Konfiguration (anonyme Anmeldungen aktiviert?) und versuche es erneut."
+          );
+          return;
         }
         setSession(anon.session);
+      } catch (e) {
+        // Netzwerkfehler o. AE. - NIE stumm haengen bleiben.
+        console.error("Auth-Initialisierung fehlgeschlagen:", e);
+        setError("Verbindung zum Anmeldedienst fehlgeschlagen. Bitte pruefe deine Internetverbindung.");
+      } finally {
+        // Garantiert: der Ladezustand loest immer auf (kein Whitescreen-Hang).
+        setLoading(false);
       }
-      setLoading(false);
     }
     void init();
 
@@ -54,9 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       userId: session?.user.id ?? null,
       loading,
+      error,
       signOut: () => supabase.auth.signOut().then(() => undefined),
     }),
-    [session, loading]
+    [session, loading, error]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

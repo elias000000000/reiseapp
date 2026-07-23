@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./state/AuthContext";
 import { OnboardingProvider } from "./state/OnboardingContext";
+import { FatalError } from "./components/ErrorBoundary";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { OnboardingScreen } from "./screens/OnboardingScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
@@ -30,7 +31,13 @@ function StartRedirect() {
 
 function AppRoutes() {
   const location = useLocation();
-  const { loading } = useAuth();
+  const { loading, error } = useAuth();
+
+  // Release-Haertung: harter Init-/Konfigfehler -> lesbare Fehlerseite statt
+  // stumm ins Leere zu laufen (fruehere Whitescreen-Quelle).
+  if (error) {
+    return <FatalError title="App nicht verfuegbar" detail={error} />;
+  }
 
   // Anonyme Session aufloesen/erstellen - normalerweise <100ms, kein
   // sichtbarer Ladezustand noetig (kein Login-Screen mehr vorhanden).

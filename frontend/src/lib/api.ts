@@ -11,7 +11,15 @@ import { supabase } from "./supabase";
 // Bewusst "||" statt "??": eine leer gelassene VITE_API_URL= in .env (z. B.
 // aus der .env.example-Vorlage uebernommen) ist ein leerer String, kein
 // undefined - "??" wuerde das faelschlich als "gesetzt" durchgehen lassen.
-const API_URL: string = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001`;
+// In Produktion (Vercel) laufen Frontend und API auf derselben Origin: das
+// Backend ist eine Serverless Function unter /api (vercel.json). Deshalb im
+// Produktions-Build same-origin "/api" als Default — kein CORS, keine
+// hartkodierte Host/Port-Angabe. Lokal weiterhin der Dev-Backend-Port 3001
+// (am Desktop localhost, am iPhone die LAN-IP des Hostnamens).
+// VITE_API_URL uebersteuert beides, falls das Backend doch woanders laeuft.
+const API_URL: string =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? "/api" : `http://${window.location.hostname}:3001`);
 
 export class ApiRequestError extends Error {
   constructor(
